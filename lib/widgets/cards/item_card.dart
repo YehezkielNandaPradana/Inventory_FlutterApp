@@ -41,53 +41,98 @@ class ItemCard extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _buildImage(),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.pureWhite,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primaryBlue.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _buildImage(),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    barang.nama,
+                    style: AppTextStyles.h3.copyWith(fontSize: 15),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    barang.kategori,
+                    style: AppTextStyles.bodySecondary,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 10),
+                  _buildStockProgress(),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  barang.nama,
-                  style: AppTextStyles.h2.copyWith(fontSize: 15),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  '${barang.stok} pcs',
+                  style: AppTextStyles.stockNumber,
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  barang.kategori,
-                  style: AppTextStyles.bodySecondary,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                _buildStatusBadge(),
               ],
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStockProgress() {
+    final percentage = barang.persentaseStok;
+    final statusColor = _statusColor;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: LinearProgressIndicator(
+            value: percentage,
+            minHeight: 6,
+            backgroundColor: AppColors.lightBlueBg,
+            valueColor: AlwaysStoppedAnimation<Color>(statusColor),
           ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${barang.stok} pcs',
-                style: AppTextStyles.h2.copyWith(
-                  fontSize: 15,
-                  color: _statusColor,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                barang.status,
-                style: AppTextStyles.caption.copyWith(
-                  color: _statusColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusBadge() {
+    final statusColor = _statusColor;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: statusColor.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        barang.status,
+        style: AppTextStyles.caption.copyWith(
+          color: statusColor,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
