@@ -113,7 +113,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
       bottomNavigationBar: BottomNavBar(
         selectedIndex: _selectedNavIndex,
         onTap: (index) {
-          setState(() => _selectedNavIndex = index);
+          if (index == _selectedNavIndex) return;
+          
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, AppRoutes.barangList);
+              break;
+            case 2:
+              Navigator.pushNamed(context, AppRoutes.barangForm);
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, AppRoutes.dashboard); // Placeholder for profile
+              break;
+          }
         },
       ),
     );
