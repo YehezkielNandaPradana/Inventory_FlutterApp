@@ -37,7 +37,7 @@ class InventoryApi {
 
   Future<Barang> createBarang({
     required String nama,
-    required String kategori,
+    required String kategoriId,
     required int stok,
     required int stokMinimum,
     String? gambar,
@@ -47,7 +47,7 @@ class InventoryApi {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'nama': nama,
-        'kategori': kategori,
+        'kategori_id': kategoriId,
         'stok': stok,
         'stok_minimum': stokMinimum,
         if (gambar != null) 'gambar': gambar,
