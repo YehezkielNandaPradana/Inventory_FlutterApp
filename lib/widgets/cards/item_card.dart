@@ -3,14 +3,31 @@ import '../../config/colors.dart';
 import '../../config/text_styles.dart';
 import '../../models/barang_model.dart';
 
-class ItemCard extends StatelessWidget {
+class ItemCard extends StatefulWidget {
   final Barang barang;
   final VoidCallback? onTap;
+  final int animationDelay;
 
-  const ItemCard({super.key, required this.barang, this.onTap});
+  const ItemCard({
+    super.key,
+    required this.barang,
+    this.onTap,
+    this.animationDelay = 0,
+  });
+
+  @override
+  State<ItemCard> createState() => _ItemCardState();
+}
+
+class _ItemCardState extends State<ItemCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _progressAnimation;
 
   Color get _statusColor {
-    switch (barang.status) {
+    switch (widget.barang.status) {
       case 'Habis':
         return AppColors.dangerRed;
       case 'Menipis':
@@ -26,7 +43,7 @@ class ItemCard extends StatelessWidget {
   }
 
   IconData get _kategoriIcon {
-    switch (barang.kategori) {
+    switch (widget.barang.kategori) {
       case 'Alat Tulis':
         return Icons.edit_outlined;
       case 'Perlengkapan Kantor':
@@ -37,85 +54,225 @@ class ItemCard extends StatelessWidget {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 700),
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.7, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
+      ),
+    );
+
+    _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.4, 1.0, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    Future.delayed(Duration(milliseconds: widget.animationDelay), () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.pureWhite,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryBlue.withOpacity(0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return SlideTransition(
+          position: _slideAnimation,
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: child,
+          ),
+        );
+      },
+      child: _buildCardContent(),
+    );
+  }
+
+  Widget _buildCardContent() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: widget.onTap,
+        borderRadius: BorderRadius.circular(20),
+        splashColor: AppColors.primaryBlue.withOpacity(0.08),
+        highlightColor: AppColors.primaryBlue.withOpacity(0.04),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.pureWhite,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.lightBlueBg,
+              width: 1.5,
             ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _buildImage(),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryBlue.withOpacity(0.06),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Status accent bar
+              Container(
+                width: 4,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: _statusColor,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              const SizedBox(width: 12),
+              _buildImage(),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.barang.nama,
+                      style: AppTextStyles.h3.copyWith(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          _kategoriIcon,
+                          size: 13,
+                          color: AppColors.slateText.withOpacity(0.7),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            widget.barang.kategori,
+                            style: AppTextStyles.bodySecondary.copyWith(
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    _buildStockProgress(),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    barang.nama,
-                    style: AppTextStyles.h3.copyWith(fontSize: 15),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    '${widget.barang.stok}',
+                    style: AppTextStyles.stockNumber.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.navyText,
+                    ),
                   ),
-                  const SizedBox(height: 4),
                   Text(
-                    barang.kategori,
-                    style: AppTextStyles.bodySecondary,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    'pcs',
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.slateText,
+                      fontSize: 11,
+                    ),
                   ),
-                  const SizedBox(height: 10),
-                  _buildStockProgress(),
+                  const SizedBox(height: 6),
+                  _buildStatusBadge(),
                 ],
               ),
-            ),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${barang.stok} pcs',
-                  style: AppTextStyles.stockNumber,
-                ),
-                const SizedBox(height: 4),
-                _buildStatusBadge(),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildStockProgress() {
-    final percentage = barang.persentaseStok;
+    final percentage = widget.barang.persentaseStok;
     final statusColor = _statusColor;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
+    return AnimatedBuilder(
+      animation: _progressAnimation,
+      builder: (context, child) {
+        return ClipRRect(
           borderRadius: BorderRadius.circular(6),
-          child: LinearProgressIndicator(
-            value: percentage,
-            minHeight: 6,
-            backgroundColor: AppColors.lightBlueBg,
-            valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+          child: Stack(
+            children: [
+              // Track
+              Container(
+                height: 6,
+                decoration: BoxDecoration(
+                  color: AppColors.lightBlueBg,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              // Fill with gradient
+              FractionallySizedBox(
+                widthFactor: percentage * _progressAnimation.value,
+                child: Container(
+                  height: 6,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        statusColor.withOpacity(0.7),
+                        statusColor,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(6),
+                    boxShadow: [
+                      BoxShadow(
+                        color: statusColor.withOpacity(0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -124,28 +281,34 @@ class ItemCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.12),
+        gradient: LinearGradient(
+          colors: [
+            statusColor.withOpacity(0.15),
+            statusColor.withOpacity(0.08),
+          ],
+        ),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        barang.status,
+        widget.barang.status,
         style: AppTextStyles.caption.copyWith(
           color: statusColor,
           fontWeight: FontWeight.w600,
+          fontSize: 11,
         ),
       ),
     );
   }
 
   Widget _buildImage() {
-    final gambar = barang.gambar;
+    final gambar = widget.barang.gambar;
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
       child: (gambar != null && gambar.isNotEmpty)
           ? Image.network(
               gambar,
-              width: 56,
-              height: 56,
+              width: 52,
+              height: 52,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) => _placeholder(),
               loadingBuilder: (context, child, progress) {
@@ -159,9 +322,19 @@ class ItemCard extends StatelessWidget {
 
   Widget _placeholder({bool loading = false}) {
     return Container(
-      width: 56,
-      height: 56,
-      color: AppColors.lightBlueBg,
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.lightBlueBg,
+            AppColors.primaryBlue.withOpacity(0.08),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14),
+      ),
       alignment: Alignment.center,
       child: loading
           ? SizedBox(
@@ -174,7 +347,7 @@ class ItemCard extends StatelessWidget {
                 ),
               ),
             )
-          : Icon(_kategoriIcon, color: AppColors.primaryBlue, size: 26),
+          : Icon(_kategoriIcon, color: AppColors.primaryBlue, size: 24),
     );
   }
 }

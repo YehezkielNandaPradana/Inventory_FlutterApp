@@ -29,4 +29,19 @@ class ApiService {
       message: data['message'] as String,
     );
   }
+
+  Future<UserModel> getUserProfile() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/profile'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+    if (response.statusCode != 200) {
+      throw Exception(data['message'] ?? 'Gagal mengambil data profil');
+    }
+
+    return UserModel.fromJson(data['user'] as Map<String, dynamic>);
+  }
 }

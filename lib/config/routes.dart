@@ -6,4 +6,5 @@ class AppRoutes {
   static const String barangForm = '/barang/form';
   static const String kategori = '/kategori';
   static const String stok = '/stok';
+  static const String profile = '/profile';
 }
