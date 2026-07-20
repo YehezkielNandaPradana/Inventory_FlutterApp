@@ -74,7 +74,7 @@ lib/
 - **Framework**: Flutter 3.11.5+
 - **Language**: Dart SDK ^3.11.5
 - **State Management**: Provider/Riverpod
-- **Database**: SQLite (local storage)
+- **Database**: MySql (local storage)
 - **UI Toolkit**: Material Design 3
 - **Fonts**: Google Fonts (Poppins, Inter)
 - **Icons**: Cupertino Icons
