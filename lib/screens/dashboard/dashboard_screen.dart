@@ -191,11 +191,6 @@ class _DashboardScreenState extends State<DashboardScreen>
               Navigator.pushNamed(context, AppRoutes.barangForm);
               break;
             case 3:
-              Navigator.pushReplacementNamed(
-                context,
-                AppRoutes.profile,
-                arguments: _user,
-              );
               break;
           }
         },

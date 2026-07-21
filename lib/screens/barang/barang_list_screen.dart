@@ -60,15 +60,13 @@ class _BarangListScreenState extends State<BarangListScreen>
         curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
       ),
     );
-    _headerSlide = Tween<Offset>(
-      begin: const Offset(0, -0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _headerAnimController,
-        curve: Curves.easeOutCubic,
-      ),
-    );
+    _headerSlide = Tween<Offset>(begin: const Offset(0, -0.3), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _headerAnimController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     // Search animation
     _searchAnimController = AnimationController(
@@ -76,16 +74,10 @@ class _BarangListScreenState extends State<BarangListScreen>
       vsync: this,
     );
     _searchFade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _searchAnimController,
-        curve: Curves.easeOut,
-      ),
+      CurvedAnimation(parent: _searchAnimController, curve: Curves.easeOut),
     );
     _searchScale = Tween<double>(begin: 0.95, end: 1).animate(
-      CurvedAnimation(
-        parent: _searchAnimController,
-        curve: Curves.easeOutBack,
-      ),
+      CurvedAnimation(parent: _searchAnimController, curve: Curves.easeOutBack),
     );
 
     // FAB animation
@@ -94,10 +86,7 @@ class _BarangListScreenState extends State<BarangListScreen>
       vsync: this,
     );
     _fabScale = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _fabAnimController,
-        curve: Curves.elasticOut,
-      ),
+      CurvedAnimation(parent: _fabAnimController, curve: Curves.elasticOut),
     );
 
     // Stagger animations
@@ -137,11 +126,12 @@ class _BarangListScreenState extends State<BarangListScreen>
     final query = _searchController.text.trim().toLowerCase();
     setState(() {
       _filteredBarangList = _barangList.where((barang) {
-        final matchesSearch = query.isEmpty ||
+        final matchesSearch =
+            query.isEmpty ||
             barang.nama.toLowerCase().contains(query) ||
             barang.kategori.toLowerCase().contains(query);
-        final matchesFilter = _selectedFilter == 'Semua' ||
-            barang.status == _selectedFilter;
+        final matchesFilter =
+            _selectedFilter == 'Semua' || barang.status == _selectedFilter;
         return matchesSearch && matchesFilter;
       }).toList();
     });
@@ -190,7 +180,6 @@ class _BarangListScreenState extends State<BarangListScreen>
         Navigator.pushNamed(context, AppRoutes.barangForm);
         break;
       case 3:
-        Navigator.pushReplacementNamed(context, AppRoutes.dashboard); // Placeholder for profile
         break;
       default:
         break;
@@ -216,7 +205,8 @@ class _BarangListScreenState extends State<BarangListScreen>
                   left: AppConstants.spacing24,
                   right: AppConstants.spacing24,
                   top: AppConstants.spacing16,
-                  bottom: AppConstants.spacing32 +
+                  bottom:
+                      AppConstants.spacing32 +
                       MediaQuery.of(context).padding.bottom,
                 ),
                 sliver: SliverList(
@@ -276,10 +266,7 @@ class _BarangListScreenState extends State<BarangListScreen>
                   height: 36,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        AppColors.primaryBlue,
-                        AppColors.skyBlue,
-                      ],
+                      colors: [AppColors.primaryBlue, AppColors.skyBlue],
                     ),
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -290,10 +277,7 @@ class _BarangListScreenState extends State<BarangListScreen>
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Barang',
-                  style: AppTextStyles.h1.copyWith(fontSize: 20),
-                ),
+                Text('Barang', style: AppTextStyles.h1.copyWith(fontSize: 20)),
               ],
             ),
           ),
@@ -308,10 +292,7 @@ class _BarangListScreenState extends State<BarangListScreen>
       builder: (context, child) {
         return Transform.scale(
           scale: _searchScale.value,
-          child: Opacity(
-            opacity: _searchFade.value,
-            child: child,
-          ),
+          child: Opacity(opacity: _searchFade.value, child: child),
         );
       },
       child: Container(
@@ -425,7 +406,12 @@ class _BarangListScreenState extends State<BarangListScreen>
                     border: Border.all(
                       color: isSelected
                           ? color
-                          : AppColors.slateText.withOpacity(0.15),
+                          : const Color.fromARGB(
+                              255,
+                              90,
+                              108,
+                              145,
+                            ).withOpacity(0.15),
                       width: 1.5,
                     ),
                     boxShadow: isSelected
@@ -446,9 +432,7 @@ class _BarangListScreenState extends State<BarangListScreen>
                           width: 8,
                           height: 8,
                           decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.pureWhite
-                                : color,
+                            color: isSelected ? AppColors.pureWhite : color,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -460,8 +444,9 @@ class _BarangListScreenState extends State<BarangListScreen>
                           color: isSelected
                               ? AppColors.pureWhite
                               : AppColors.slateText,
-                          fontWeight:
-                              isSelected ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                           fontSize: 13,
                         ),
                       ),
@@ -489,16 +474,11 @@ class _BarangListScreenState extends State<BarangListScreen>
         ),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
-          transitionBuilder: (child, animation) => ScaleTransition(
-            scale: animation,
-            child: child,
-          ),
+          transitionBuilder: (child, animation) =>
+              ScaleTransition(scale: animation, child: child),
           child: Container(
             key: ValueKey(total),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 6,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -567,9 +547,7 @@ class _BarangListScreenState extends State<BarangListScreen>
           const SizedBox(height: 20),
           Text(
             'Koneksi Terputus',
-            style: AppTextStyles.h3.copyWith(
-              color: AppColors.navyText,
-            ),
+            style: AppTextStyles.h3.copyWith(color: AppColors.navyText),
           ),
           const SizedBox(height: 8),
           Text(
@@ -633,9 +611,7 @@ class _BarangListScreenState extends State<BarangListScreen>
             _searchController.text.isEmpty
                 ? 'Belum ada barang'
                 : 'Barang tidak ditemukan',
-            style: AppTextStyles.h3.copyWith(
-              color: AppColors.navyText,
-            ),
+            style: AppTextStyles.h3.copyWith(color: AppColors.navyText),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
@@ -643,9 +619,7 @@ class _BarangListScreenState extends State<BarangListScreen>
             _searchController.text.isEmpty
                 ? 'Tambahkan barang pertama kamu'
                 : 'Coba kata kunci atau filter lain',
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.slateText,
-            ),
+            style: AppTextStyles.caption.copyWith(color: AppColors.slateText),
             textAlign: TextAlign.center,
           ),
           if (_searchController.text.isEmpty) ...[
@@ -662,8 +636,10 @@ class _BarangListScreenState extends State<BarangListScreen>
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
             ),
           ],
@@ -707,9 +683,7 @@ class _BarangListScreenState extends State<BarangListScreen>
         backgroundColor: AppColors.primaryBlue,
         elevation: 8,
         highlightElevation: 12,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         icon: const Icon(Icons.add_rounded, color: AppColors.pureWhite),
         label: const Text(
           'Tambah',
@@ -746,9 +720,10 @@ class _ShimmerItemCardState extends State<_ShimmerItemCard>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    _shimmer = Tween<double>(begin: 0.3, end: 0.7).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _shimmer = Tween<double>(
+      begin: 0.3,
+      end: 0.7,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     Future.delayed(Duration(milliseconds: widget.delay), () {
       if (mounted) _controller.repeat(reverse: true);
     });
@@ -772,10 +747,7 @@ class _ShimmerItemCardState extends State<_ShimmerItemCard>
         decoration: BoxDecoration(
           color: AppColors.pureWhite,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: AppColors.lightBlueBg,
-            width: 1.5,
-          ),
+          border: Border.all(color: AppColors.lightBlueBg, width: 1.5),
         ),
         child: Row(
           children: [
