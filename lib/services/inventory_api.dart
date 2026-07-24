@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../config/constants.dart';
 import '../models/barang_model.dart';
 import '../models/kategori_model.dart';
+import '../models/transaksi_model.dart';
 
 class InventoryApi {
   final String baseUrl = AppConstants.baseUrl;
@@ -19,6 +20,21 @@ class InventoryApi {
 
     final List<dynamic> list = jsonDecode(response.body) as List<dynamic>;
     return list.map((item) => Barang.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<Barang> fetchBarangDetail(String id) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/barangs/$id'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Gagal mengambil data barang (${response.statusCode})');
+    }
+
+    final Map<String, dynamic> json =
+        jsonDecode(response.body) as Map<String, dynamic>;
+    return Barang.fromJson(json);
   }
 
   Future<List<Kategori>> fetchKategoriList() async {
@@ -61,5 +77,64 @@ class InventoryApi {
     final Map<String, dynamic> json =
         jsonDecode(response.body) as Map<String, dynamic>;
     return Barang.fromJson(json);
+  }
+
+  Future<Transaksi> createTransaksi({
+    required String barangId,
+    required String jenis,
+    required int jumlah,
+    String? keterangan,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/transaksi'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'barang_id': barangId,
+        'jenis': jenis,
+        'jumlah': jumlah,
+        if (keterangan != null) 'keterangan': keterangan,
+      }),
+    );
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw Exception('Gagal menambahkan transaksi (${response.statusCode})');
+    }
+
+    final Map<String, dynamic> json =
+        jsonDecode(response.body) as Map<String, dynamic>;
+    return Transaksi.fromJson(json);
+  }
+
+  Future<List<Transaksi>> fetchTransaksiList({String? jenis}) async {
+    final uri = jenis != null
+        ? Uri.parse('$baseUrl/transaksi?jenis=$jenis')
+        : Uri.parse('$baseUrl/transaksi');
+
+    final response = await http.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Gagal mengambil data transaksi (${response.statusCode})');
+    }
+
+    final List<dynamic> list = jsonDecode(response.body) as List<dynamic>;
+    return list.map((item) => Transaksi.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<Map<String, dynamic>> fetchRekap() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/rekap'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Gagal mengambil data rekap (${response.statusCode})');
+    }
+
+    final Map<String, dynamic> json =
+        jsonDecode(response.body) as Map<String, dynamic>;
+    return json;
   }
 }

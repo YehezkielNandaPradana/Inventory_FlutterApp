@@ -150,8 +150,8 @@ Kategori: Alat Tulis
 │  Kategori: Alat Tulis         │
 │  Status: 🟢 Stok Aman         │
 │                              │
-│  Jumlah Stok       200 pcs   │
-│  [██████████████░░░]         │
+│                    200 pcs   │
+│                               │
 │                              │
 │  [  Edit Barang  ] (outline) │
 │  [ Kurangi Stok  ] (filled)  │

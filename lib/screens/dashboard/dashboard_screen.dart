@@ -25,10 +25,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   List<Barang> _barangList = [];
   int _totalBarang = 0;
   int _stokMenipis = 0;
-  int _totalKategori = 0;
+  int _totalRusak = 0;
   UserModel? _user;
 
-  // Animation controllers
   late AnimationController _headerController;
   late Animation<double> _headerSlide;
   late Animation<double> _headerFade;
@@ -55,7 +54,6 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
     );
 
-    // Section animation for "Barang Terbaru" title
     _sectionController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -104,11 +102,14 @@ class _DashboardScreenState extends State<DashboardScreen>
     try {
       final api = InventoryApi();
       final barangList = await api.fetchBarangList();
+      final transaksiList = await api.fetchTransaksiList();
 
       final stokMenipis = barangList
           .where((b) => b.status == 'Menipis' || b.status == 'Habis')
           .length;
-      final totalKategori = barangList.map((b) => b.kategori).toSet().length;
+      final totalRusak = transaksiList
+          .where((t) => t.jenis == 'rusak')
+          .fold(0, (sum, t) => sum + t.jumlah);
 
       if (!mounted) return;
 
@@ -116,7 +117,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         _barangList = barangList;
         _totalBarang = barangList.length;
         _stokMenipis = stokMenipis;
-        _totalKategori = totalKategori;
+        _totalRusak = totalRusak;
         _isLoading = false;
       });
     } on Exception catch (e) {
@@ -167,6 +168,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                   child: Transform.translate(
                     offset: const Offset(0, -12),
+                    child: _buildActions(),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.spacing24,
+                  ),
+                  child: Transform.translate(
+                    offset: const Offset(0, -8),
                     child: _buildBarangTerbaru(),
                   ),
                 ),
@@ -188,9 +198,10 @@ class _DashboardScreenState extends State<DashboardScreen>
               Navigator.pushReplacementNamed(context, AppRoutes.barangList);
               break;
             case 2:
-              Navigator.pushNamed(context, AppRoutes.barangForm);
+              Navigator.pushReplacementNamed(context, AppRoutes.stokMasuk);
               break;
             case 3:
+              Navigator.pushReplacementNamed(context, AppRoutes.kondisiRusak);
               break;
           }
         },
@@ -243,7 +254,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           children: [
             Row(
               children: [
-                // Avatar with gradient ring
                 Container(
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
@@ -278,13 +288,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     Text(
-                       'Halo, ${_user?.name ?? 'Admin'}',
-                       style: AppTextStyles.h1.copyWith(
-                         color: AppColors.pureWhite,
-                         fontSize: 22,
-                       ),
-                     ),
+                    Text(
+                      'Halo, ${_user?.name ?? 'Admin'}',
+                      style: AppTextStyles.h1.copyWith(
+                        color: AppColors.pureWhite,
+                        fontSize: 22,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       'Selamat datang kembali!',
@@ -296,7 +306,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ],
             ),
-            // Notification bell with badge
             Container(
               width: 42,
               height: 42,
@@ -308,35 +317,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                   width: 1,
                 ),
               ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.notifications_outlined,
-                      color: AppColors.pureWhite,
-                      size: 22,
-                    ),
-                    onPressed: () {},
-                  ),
-                  if (_stokMenipis > 0)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: AppColors.dangerRed,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.primaryBlue,
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+              child: IconButton(
+                icon: const Icon(
+                  Icons.notifications_outlined,
+                  color: AppColors.pureWhite,
+                  size: 22,
+                ),
+                onPressed: () {},
               ),
             ),
           ],
@@ -369,9 +356,9 @@ class _DashboardScreenState extends State<DashboardScreen>
           SizedBox(width: AppConstants.spacing16),
           Expanded(
             child: StatCard(
-              title: 'Kategori',
+              title: 'Total Rusak',
               value: '-',
-              accentColor: AppColors.primaryBlue,
+              accentColor: AppColors.dangerRed,
               animationDelay: 500,
             ),
           ),
@@ -407,14 +394,90 @@ class _DashboardScreenState extends State<DashboardScreen>
         const SizedBox(width: AppConstants.spacing16),
         Expanded(
           child: StatCard(
-            title: 'Kategori',
-            value: _totalKategori.toString(),
-            accentColor: AppColors.skyBlue,
-            icon: Icons.category_outlined,
+            title: 'Total Rusak',
+            value: _totalRusak.toString(),
+            accentColor: AppColors.dangerRed,
+            icon: Icons.warning_amber_rounded,
             animationDelay: 500,
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildActions() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.pureWhite,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryBlue.withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.pushNamed(context, AppRoutes.rekap);
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primaryBlue.withOpacity(0.15),
+                      AppColors.skyBlue.withOpacity(0.08),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.analytics_rounded,
+                  size: 20,
+                  color: AppColors.primaryBlue,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pengecekan Data Rekap',
+                      style: AppTextStyles.h3.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Lihat ringkasan dan laporan inventori',
+                      style: AppTextStyles.caption.copyWith(
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14,
+                color: AppColors.primaryBlue,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -621,7 +684,6 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 }
 
-/// Shimmer loading placeholder with pulsing animation
 class _ShimmerItem extends StatefulWidget {
   final int delay;
 

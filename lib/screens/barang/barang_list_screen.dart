@@ -174,12 +174,12 @@ class _BarangListScreenState extends State<BarangListScreen>
         Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
         break;
       case 1:
-        // Stay on current page (BarangListScreen)
         break;
       case 2:
-        Navigator.pushNamed(context, AppRoutes.barangForm);
+        Navigator.pushReplacementNamed(context, AppRoutes.stokMasuk);
         break;
       case 3:
+        Navigator.pushReplacementNamed(context, AppRoutes.kondisiRusak);
         break;
       default:
         break;
